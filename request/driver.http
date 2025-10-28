@@ -1,0 +1,9 @@
+@baseUrl = http://localhost:5000/api
+
+
+### get all users
+GET {{baseUrl}}/drivers
+
+### get specific user
+GET {{baseUrl}}/drivers/69002098ecb4540c1f5e2b33
+
