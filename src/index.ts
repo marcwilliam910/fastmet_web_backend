@@ -2,8 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import driverRoute from "../src/routes/driverRoute";
-import authRoute from "../src/routes/authRoute";
+import driverRoute from "./routes/driverRoute";
+import authRoute from "./routes/authRoute";
 import cookieParser from "cookie-parser";
 
 dotenv.config();
