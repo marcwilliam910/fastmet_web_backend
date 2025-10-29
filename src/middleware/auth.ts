@@ -10,10 +10,9 @@ export interface AuthRequest extends Request {
 }
 
 export function auth(req: AuthRequest, res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (!header) return res.status(401).json({ message: "Unauthorized" });
+  const token = req.cookies?.token; // read from cookie
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-  const token = header.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     req.user = decoded;

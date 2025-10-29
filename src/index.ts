@@ -4,11 +4,20 @@ import cors from "cors";
 import dotenv from "dotenv";
 import driverRoute from "../src/routes/driverRoute";
 import authRoute from "../src/routes/authRoute";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:4000"], // admin and user url
+    credentials: true, // allow cookies
+  })
+);
+
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/drivers", driverRoute);

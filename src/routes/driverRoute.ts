@@ -64,16 +64,30 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // Read all
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", auth, async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
 
   try {
-    const [drivers, total] = await Promise.all([
-      DriverModel.find().skip(skip).limit(limit),
+    const [drivers, total, vehicleCountsAgg] = await Promise.all([
+      DriverModel.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
       DriverModel.countDocuments(),
+      DriverModel.aggregate([
+        {
+          $group: {
+            _id: "$vehicleType", // assumes your field is named vehicleType
+            count: { $sum: 1 },
+          },
+        },
+      ]),
     ]);
+
+    // Convert to object
+    const vehicleCounts = vehicleCountsAgg.reduce((acc, curr) => {
+      acc[curr._id] = curr.count;
+      return acc;
+    }, {} as Record<string, number>);
 
     res.json({
       data: drivers,
@@ -83,6 +97,7 @@ router.get("/", async (req: Request, res: Response) => {
         limit,
         totalPages: Math.ceil(total / limit),
       },
+      vehicleCounts,
     });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -101,7 +116,7 @@ router.get("/:id", auth, async (req: Request, res: Response) => {
 });
 
 // Read one by name
-router.get("/search/:name", async (req: Request, res: Response) => {
+router.get("/search/:name", auth, async (req: Request, res: Response) => {
   try {
     const { name } = req.params;
     if (!name) return res.status(400).json({ error: "Name params required" });
