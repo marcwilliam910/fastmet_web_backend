@@ -15,10 +15,10 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:4000",
-      "fastmet-driver-registration.vercel.app",
-      "fastmet-admin-dashboard.vercel.app",
-    ], // admin and user url
-    credentials: true, // allow cookies
+      "https://fastmet-driver-registration.vercel.app",
+      "https://fastmet-admin-dashboard.vercel.app",
+    ],
+    credentials: true,
   })
 );
 
