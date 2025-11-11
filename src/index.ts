@@ -2,7 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import driverRoute from "./routes/driverRoute";
+import preRegisteredDriverRoute from "./routes/preRegisterDriverRoute";
+import preRegisteredUserRoute from "./routes/preRegisterUserRoute";
 import authRoute from "./routes/authRoute";
 import cookieParser from "cookie-parser";
 
@@ -25,7 +26,8 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/api/drivers", driverRoute);
+app.use("/api/drivers/pre-register", preRegisteredDriverRoute);
+app.use("/api/users/pre-register", preRegisteredUserRoute);
 app.use("/api/auth", authRoute);
 
 // Database connect then start server

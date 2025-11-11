@@ -1,6 +1,6 @@
-import { Router, Request, Response } from "express";
-import DriverModel from "../models/driverModel";
-import { auth } from "../middleware/auth";
+import {Router, Request, Response} from "express";
+import {auth} from "../middleware/auth";
+import PreRegisteredDriverModel from "../models/preRegisteredDriverModel";
 
 const requiredFields = [
   "fullName",
@@ -16,8 +16,8 @@ const router = Router();
 
 // Create
 router.post("/", async (req: Request, res: Response) => {
-  const { captcha } = req.body;
-  if (!captcha) return res.status(400).json({ error: "Captcha required." });
+  const {captcha} = req.body;
+  if (!captcha) return res.status(400).json({error: "Captcha required."});
 
   try {
     // Verify captcha
@@ -29,37 +29,37 @@ router.post("/", async (req: Request, res: Response) => {
 
     const response = await fetch(verifyUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: params,
     });
     const data = await response.json();
 
     if (!data.success)
-      return res.status(400).json({ error: "Captcha verification failed." });
+      return res.status(400).json({error: "Captcha verification failed."});
 
     // Validate required fields
     for (const field of requiredFields) {
       if (!req.body[field])
         return res
           .status(400)
-          .json({ error: `Missing required field: ${field}` });
+          .json({error: `Missing required field: ${field}`});
     }
 
-    const { email, contactNumber } = req.body;
+    const {email, contactNumber} = req.body;
 
-    const existingDriver = await DriverModel.findOne({
-      $or: [{ email }, { contactNumber }],
+    const existingDriver = await PreRegisteredDriverModel.findOne({
+      $or: [{email}, {contactNumber}],
     });
     if (existingDriver)
       return res.status(409).json({
         error: "A driver with this email or contact number already exists.",
       });
 
-    const driver = await DriverModel.create(req.body);
+    const driver = await PreRegisteredDriverModel.create(req.body);
     return res.status(201).json(driver);
   } catch (err: any) {
     console.error("Error during registration:", err);
-    return res.status(500).json({ error: "Internal server error." });
+    return res.status(500).json({error: "Internal server error."});
   }
 });
 
@@ -71,13 +71,16 @@ router.get("/", auth, async (req: Request, res: Response) => {
 
   try {
     const [drivers, total, vehicleCountsAgg] = await Promise.all([
-      DriverModel.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
-      DriverModel.countDocuments(),
-      DriverModel.aggregate([
+      PreRegisteredDriverModel.find()
+        .skip(skip)
+        .limit(limit)
+        .sort({createdAt: -1}),
+      PreRegisteredDriverModel.countDocuments(),
+      PreRegisteredDriverModel.aggregate([
         {
           $group: {
             _id: "$vehicleType", // assumes your field is named vehicleType
-            count: { $sum: 1 },
+            count: {$sum: 1},
           },
         },
       ]),
@@ -100,62 +103,64 @@ router.get("/", auth, async (req: Request, res: Response) => {
       vehicleCounts,
     });
   } catch {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({error: "Server error"});
   }
 });
 
 // Read one
 router.get("/:id", auth, async (req: Request, res: Response) => {
   try {
-    const driver = await DriverModel.findById(req.params.id);
-    if (!driver) return res.status(404).json({ error: "Not found" });
+    const driver = await PreRegisteredDriverModel.findById(req.params.id);
+    if (!driver) return res.status(404).json({error: "Not found"});
     res.json(driver);
   } catch {
-    res.status(400).json({ error: "Invalid ID" });
+    res.status(400).json({error: "Invalid ID"});
   }
 });
 
 // Read one by name
 router.get("/search/:name", auth, async (req: Request, res: Response) => {
   try {
-    const { name } = req.params;
-    if (!name) return res.status(400).json({ error: "Name params required" });
+    const {name} = req.params;
+    if (!name) return res.status(400).json({error: "Name params required"});
 
-    const driver = await DriverModel.findOne({
-      name: { $regex: new RegExp(name as string, "i") },
+    const driver = await PreRegisteredDriverModel.findOne({
+      name: {$regex: new RegExp(name as string, "i")},
     });
-    if (!driver) return res.status(404).json({ error: "Driver not found" });
+    if (!driver) return res.status(404).json({error: "Driver not found"});
 
     res.json(driver);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({error: "Server error"});
   }
 });
 
 // Update
 router.put("/:id", auth, async (req: Request, res: Response) => {
   try {
-    const driver = await DriverModel.findByIdAndUpdate(
+    const driver = await PreRegisteredDriverModel.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      {new: true}
     );
-    if (!driver) return res.status(404).json({ error: "Not found" });
+    if (!driver) return res.status(404).json({error: "Not found"});
     res.json(driver);
   } catch {
-    res.status(400).json({ error: "Invalid ID" });
+    res.status(400).json({error: "Invalid ID"});
   }
 });
 
 // Delete
 router.delete("/:id", auth, async (req: Request, res: Response) => {
   try {
-    const driver = await DriverModel.findByIdAndDelete(req.params.id);
-    if (!driver) return res.status(404).json({ error: "Not found" });
-    res.json({ message: "Deleted" });
+    const driver = await PreRegisteredDriverModel.findByIdAndDelete(
+      req.params.id
+    );
+    if (!driver) return res.status(404).json({error: "Not found"});
+    res.json({message: "Deleted"});
   } catch {
-    res.status(400).json({ error: "Invalid ID" });
+    res.status(400).json({error: "Invalid ID"});
   }
 });
 
