@@ -16,7 +16,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:4000",
-      "https://fastmet-driver-registration.vercel.app",
+      "https://fastmet-pre-registration.vercel.app",
       "https://fastmet-admin-dashboard.vercel.app",
     ],
     credentials: true,
